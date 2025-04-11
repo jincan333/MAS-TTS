@@ -1,0 +1,252 @@
+cnt_agents: &cnt_agents 2
+max_turn: &max_turn 2
+max_inner_turns: &max_inner_turns 3
+
+prompts:
+  ceo_prepend_prompt: &ceo_prepend_prompt |-
+    You are the CEO of a collaborative problem-solving system. Your responsibilities include:
+    1. Monitoring solution progress and resource allocation
+    2. Making strategic decisions about continuation/termination
+    3. Managing expert recruitment and retention
+    4. Directing discussion focus areas when the solution is not correct
+    5. Adjusting reasoning depth through token budgets
+
+    Previous system state:
+    - Task: ${task_description}
+    - Latest solution: ${solution}
+    - Evaluation feedback: ${advice}
+    - Current resources: ${current_resources}
+
+  ceo_append_prompt: &ceo_append_prompt |-
+    Now, you need to decide the system state for this round. Carefully consider the following:
+    - Choose <Stop> only if solution is correct
+    - Recruit experts based on skill gaps identified in evaluation and do not recruit more than 4 experts, typically only 2-3 agents are needed for ordinary tasks and 4 agents are needed for complex tasks
+    - Direct discussion to address weakest solution aspects
+    - Set token budget proportional to the task complexity, token usages should choose from [0, 2048, 4096, 8192, 16384, 32000], typically 2048 tokens for simple tasks, 8192 tokens for tasks require medium reasoning, and 16384 or more tokens for complex reasoning tasks
+    
+    Your response must strictly follow this structure:
+    ### Decision: <Continue> or <Stop>
+    ### Recruit Number: Number of experts to recruit in this round, should be an integer between 1 and 4
+    ### Direction: Discussion direction based on the task description, latest solution, critic opinions, and evaluation feedback
+    ### Maximum Tokens: Maximum tokens for each agent in this round, should be an integer between 2048 and 32000
+
+  role_assigner_prepend_prompt: &role_assigner_prepend_prompt |-
+    # Role Description
+    You are the leader of a group of experts, now you are facing a science problem:
+    ${task_description}
+    
+    # Primary Objective
+    Your sole responsibility is to recruit ${cnt_critic_agents} experts in different specialized fields to solve the science problem. 
+    - DO NOT attempt to solve the problem yourself
+    - DO NOT propose any solutions or calculations
+    
+    # Recruitment Focus
+    Your selection should be based on:
+    1. Identifying which expertise domains are relevant to this science problem type
+    2. Considering complementary skill sets that could collaborate effectively
+    3. Ensuring coverage of all potential aspects needed for solution
+    
+    Here are some suggestions:
+    ${advice}
+    
+    # Prohibited Actions
+    - Any mathematical reasoning or problem-solving attempts
+    - Speculation about potential solutions
+    
+  role_assigner_append_prompt: &role_assigner_append_prompt |-    
+    You can recruit ${cnt_critic_agents} expert in different fields. What experts will you recruit to better generate an accurate solution?
+
+    # Strict Instructions
+    You must ONLY recruit ${cnt_critic_agents} experts in distinct fields relevant to the science problem type. 
+    - DO NOT suggest solution approaches
+    - DO NOT compare potential methodologies
+    
+    # Response Requirements
+    1. List ${cnt_critic_agents} expert roles with their specialization
+    2. Each entry must specify:
+       - Professional discipline (e.g., computer scientist, mathematician)
+       - Primary specialization field
+       - Specific technical expertise within that field
+    3. Ensure complementary but non-overlapping domains
+    
+    # Response Format Guidance
+    Your response must follow this exact structure:
+    1. A [discipline] specialized in [primary field], with expertise in [specific technical area]
+    2. A [different discipline] with expertise in [related field], particularly in [technical specialization]
+    
+    Only provide the numbered list of expert descriptions and nothing more. Begin now:
+    
+  solver_prepend_prompt: &solver_prepend_prompt |-
+    Solve the following science problem accurately:
+    ${task_description}
+
+    You have all the necessary information to solve this science problem. Do not request additional details.
+    
+  solver_append_prompt: &solver_append_prompt |-
+    You are ${role_description}. Based on the chat history and your knowledge, provide a precise and well-explained solution to the science problem.
+    Here is some thinking direction: ${advice}
+
+    # Response Format Guidance:
+    - Your final answer must directly address the science problem.  
+    - Format your final answer as \boxed{answer} at the end of your response for easy evaluation, e.g., \boxed{A): XXX}.
+
+  critic_prepend_prompt: &critic_prepend_prompt |-
+    You are ${role_description}. You are in a discussion group, aiming to collaborative solve the following science problem:
+    ${task_description}
+    Based on your knowledge, give your critics to a solution of the science problem.
+
+  critic_append_prompt: &critic_append_prompt |-
+    Here is some thinking direction: ${advice}
+
+    Now compare your solution with the last solution given in the chat history and give your critics. The final answer is highlighted in the form \boxed{answer}. 
+    When responding, you should follow the following rules:
+    1. This science problem can be answered without any extra information. You should not ask for any extra information. 
+    2. Compare your solution with the given last solution, give your critics. You should only give your critics, don't give your answer.
+    3. If the final answer of your solution is the same as the final answer in the provided last solution, end your response with a special token "[Agree]", otherwise end your response with a special token "[Disagree]".
+
+  evaluator_prepend_prompt: &evaluator_prepend_prompt |-
+    Experts: ${all_role_description}
+    Problem: ${task_description}
+    Solution: 
+    ```
+    ${solution}
+    ```
+
+  evaluator_append_prompt: &evaluator_append_prompt |-
+    You are an experienced science teacher. As a good teacher, you carefully check the correctness of the given last solution on a complex science problem. When the last solution is wrong, you should output a correctness of 0 and give your advice to the students on how to correct the solution. When it is correct, output a correctness of 1 and why it is correct. Also check that the final answer is in the form \boxed{answer} at the end of the solution. You should also give some suggestion on what experts should recruit to solve the science problem in the next round.
+    
+    You should respond in the following format:
+    ### Correctness: (0 or 1, 0 is wrong, and 1 is correct)
+    ### Advice: (advice to correct the answer or why it is correct)
+    ### Recruiting Suggestion: (suggestion on what experts should recruit to solve the science problem in the next round)
+    
+
+    
+
+name: pipeline
+
+
+environment:
+  env_type: task-basic
+  max_turn: *max_turn
+  rule:
+    ceo:
+      type: basic
+    role_assigner:
+      type: role_description
+      cnt_agents: *cnt_agents
+    decision_maker:
+      type: vertical-solver-first
+      max_inner_turns: *max_inner_turns
+    executor:
+      type: none
+    evaluator:
+      type: basic
+
+agents:
+  - #ceo_agent:
+    agent_type: ceo
+    name: CEO
+    role_description: |-
+      CEO
+    prepend_prompt_template: *ceo_prepend_prompt
+    append_prompt_template: *ceo_append_prompt
+    max_retry: 3
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: local
+      model: "m1-32b"
+      temperature: 0.7
+      max_tokens: 32000
+    output_parser:
+      type: ceo
+      dimensions:
+        - Decision
+        - Recruit Number
+        - Direction
+        - Maximum Tokens
+
+  - #role_assigner_agent:
+    agent_type: role_assigner
+    name: role assigner
+    prepend_prompt_template: *role_assigner_prepend_prompt
+    append_prompt_template: *role_assigner_append_prompt
+    max_retry: 3
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: local
+      model: "m1-32b"
+      temperature: 0.7
+      max_tokens: 8192
+    output_parser:
+      type: role_assigner
+
+  - #solver_agent:
+    agent_type: solver
+    name: Planner
+    prepend_prompt_template: *solver_prepend_prompt
+    append_prompt_template: *solver_append_prompt
+    max_retry: 3
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: local
+      model: "m1-32b"
+      temperature: 0.7
+      max_tokens: 32000
+    output_parser:
+      type: mgsm
+
+  - #critic_agents:
+    agent_type: critic
+    name: Critic 1
+    role_description: |-
+      Waiting to be assigned.
+    prepend_prompt_template: *critic_prepend_prompt
+    append_prompt_template: *critic_append_prompt
+    max_retry: 3
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: local
+      model: "m1-32b"
+      temperature: 0.7
+      max_tokens: 16384
+    output_parser:
+      type: mgsm-critic-agree
+
+  - #executor_agent:
+    agent_type: executor
+    name: Executor
+    max_retry: 3
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: local
+      model: "m1-32b"
+      temperature: 0.7
+      max_tokens: 8192
+    output_parser:
+      type: mgsm
+
+  - #evaluator_agent:
+    agent_type: evaluator
+    name: Evaluator
+    role_description: |-
+      Evaluator
+    prepend_prompt_template: *evaluator_prepend_prompt
+    append_prompt_template: *evaluator_append_prompt
+    max_retry: 3
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: local
+      model: "m1-32b"
+      temperature: 0.7
+      max_tokens: 16384
+    output_parser:
+      type: mgsm-evaluator
+      dimensions:
+        - Correctness

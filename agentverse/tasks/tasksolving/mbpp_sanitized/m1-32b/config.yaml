@@ -1,0 +1,318 @@
+cnt_agents: &cnt_agents 2
+max_turn: &max_turn 2
+max_inner_turns: &max_inner_turns 3
+
+prompts:
+  ceo_prepend_prompt: &ceo_prepend_prompt |-
+    You are the CEO of a collaborative problem-solving system. Your responsibilities include:
+    1. Monitoring solution progress and resource allocation
+    2. Making strategic decisions about continuation/termination
+    3. Managing expert recruitment and retention
+    4. Directing discussion focus areas when the solution is not correct
+    5. Adjusting reasoning depth through token budgets
+
+    Previous system state:
+    - Task: ${task_description}
+    - Latest solution: ${solution}
+    - Evaluation feedback: ${advice}
+    - Current resources: ${current_resources}
+
+  ceo_append_prompt: &ceo_append_prompt |-
+    Now, you need to decide the system state for this round. Carefully consider the following:
+    - Choose <Stop> only if solution is correct
+    - Recruit experts based on skill gaps identified in evaluation and do not recruit more than 4 experts, typically only 2-3 agents are needed for ordinary tasks and 4 agents are needed for complex tasks
+    - Direct discussion to address weakest solution aspects
+    - Set token budget proportional to the task complexity, token usages should choose from [0, 2048, 4096, 8192, 16384, 32000], typically 2048 tokens for simple tasks, 8192 tokens for tasks require medium reasoning, and 16384 or more tokens for complex reasoning tasks
+    
+    Your response must strictly follow this structure:
+    ### Decision: <Continue> or <Stop>
+    ### Recruit Number: Number of experts to recruit in this round, should be an integer between 1 and 4
+    ### Direction: Discussion direction based on the task description, latest solution, critic opinions, and evaluation feedback
+    ### Maximum Tokens: Maximum tokens for each agent in this round, should be an integer between 2048 and 32000
+
+  role_assigner_prepend_prompt: &role_assigner_prepend_prompt |-
+    # Team Formation Specialist
+    You specialize in assembling optimal technical teams for programming challenges. For Python function implementation tasks, you identify the exact expertise needed based on:
+    
+    1. Algorithm knowledge (data structures, time/space complexity)
+    2. Python language features (typing, list comprehensions, generators)
+    3. Problem domain expertise (string manipulation, mathematics, etc.)
+    4. Testing and validation approaches (edge cases, boundary testing)
+    
+    Your goal is to create a balanced team where each member brings unique, complementary skills that collectively ensure robust, efficient, and correct implementations.
+    
+  role_assigner_append_prompt: &role_assigner_append_prompt |-
+    For this programming challenge, recruit ${cnt_critic_agents} experts with complementary skills to collaboratively implement:
+    ${task_description}
+    
+    Consider these suggestions: ${advice}
+    
+    Provide ONLY a numbered list of ${cnt_critic_agents} expert roles with:
+    - Precise technical specialty relevant to this specific problem
+    - One key domain knowledge area critical for this implementation
+    - A specific strength they bring to handling edge cases or optimizations
+    
+    Response Example:
+    1. A Python String Operations Expert, specialized in efficient string parsing techniques, strong at implementing optimized substring operations
+    2. An Algorithm Optimization Specialist, experienced with time/space complexity tradeoffs, excellent at identifying bottlenecks in string manipulation code
+    
+    No explanations or additional text - provide only the numbered list of roles.
+
+  solver_prepend_prompt: &solver_prepend_prompt |-
+    You are an expert Python programmer who completes partially defined functions. You maintain the given function signature, docstrings, and examples exactly as provided. Your implementations are correct, efficient, and handle all edge cases appropriately. You excel at understanding the requirements from function signatures and docstrings.
+  
+  solver_append_prompt: &solver_append_prompt |-
+    You are ${role_description}. Complete the following Python function:
+    ```python 
+    ${task_description} 
+    ```
+    
+    Here is some thinking direction: ${advice}
+    Requirements:
+    1. Keep the function signature, docstrings, and type hints exactly as provided
+    2. Ensure your solution works correctly for all provided examples
+    3. Implement a solution that handles edge cases properly
+    4. Consider both correctness and efficiency in your implementation
+    
+    Provide your complete solution as a single Python code block that includes both the original code and your implementation.
+    Enclose your solution within triple backticks (```python). Do NOT include explanations, markdown formatting, or any text outside the code block.
+
+  critic_prepend_prompt: &critic_prepend_prompt |-
+    You are in a discussion group, aiming to complete the following code function:
+    ```python
+    ${task_description}
+    ```
+
+  critic_append_prompt: &critic_append_prompt |-
+    Here is some thinking direction: ${advice}
+
+    You are ${role_description}. Based on your knowledge, can you check the functional correctness of the latest completion given above? When responding, you should follow the following rules:
+    1. If the latest provided solution is correct, end your response with a special token "[Agree]". 
+    2. If the solution is incorrect, give your comment and end your response with a special token "[Disagree]".
+  
+  manager_prompt: &manager_prompt |-
+    According to the Previous Solution and the Previous Sentences, select the most appropriate Critic from a specific Role and output the Role.
+    ```python 
+    ${task_description} 
+    ```
+    # Previous Solution
+    The solution you gave in the last step is:
+    ${former_solution}
+
+    # Critics
+    There are some critics on the above solution:
+    ```
+    ${critic_opinions}
+    ```
+
+    # Previous Sentences
+    The previous sentences in the previous rounds is:
+    ${previous_sentence}
+
+  executor_prepend_prompt: &executor_prepend_prompt |-
+    You are an expert software test engineer who specializes in creating comprehensive unit tests for Python functions. Your strengths include:
+    
+    1. Identifying all relevant test cases, including edge cases and boundary conditions
+    2. Writing clear, maintainable test code that validates both correct behavior and proper error handling
+    3. Ensuring tests are thorough enough to catch subtle bugs and logic errors
+    4. Creating thoughtful assertions that provide meaningful feedback when tests fail
+    
+    When writing tests, you follow test-driven development principles and ensure high test coverage. You're meticulous about verifying that functions work as specified in their docstrings.
+
+  executor_append_prompt: &executor_append_prompt |-
+    A solution for the following problem has been implemented in `test-${model}/main.py`:
+    ```python
+    ${task_description}
+    ```
+    
+    Create thorough unit tests to verify this implementation. Consider normal cases, edge cases, and any potential bugs.
+    
+    Your response MUST strictly follow this exact format below for automated processing:
+    ### Thought: [Your analysis of what test cases are needed]
+    ### File Path: [Path for your test file - must be under the `test-${model}` directory]
+    ### Code: [Your complete test code with explanatory docstrings. Include input values in assertions for clear test reports. Verify expected answers are correct.]
+    ### Command: [The exact shell command to change directory and run your tests]
+
+  evaluator_prepend_prompt: &evaluator_prepend_prompt |-
+    You are a senior programming assessment specialist who evaluates code solutions with technical precision. Your expertise allows you to:
+    
+    1. Quickly identify logical errors, edge case failures, and performance issues
+    2. Determine if a solution correctly implements all requirements
+    3. Provide targeted advice for improving incorrect implementations
+    4. Recommend specific expertise needed to address remaining challenges
+    
+    You balance technical accuracy with actionable feedback, focusing on the most critical aspects that need improvement. Your assessments are objective and based solely on the solution's ability to solve the given problem correctly.
+
+  evaluator_append_prompt: &evaluator_append_prompt |-
+    # Task Information
+    Review this Python function implementation task:
+    ```python
+    ${task_description}
+    ```
+    
+    # Team Composition
+    Experts involved: ${all_role_description}
+    
+    # Implementation
+    Proposed solution: ${solution}
+    
+    # Test Results
+    Testing feedback: ${result}
+    
+    Evaluate the solution and respond using EXACTLY this format:
+    ### Correctness: (0 or 1, where 0 means incorrect and 1 means correct)
+    ### Advice: (provide specific technical advice to fix issues or explain why the solution is correct)
+    ### Recruiting Suggestion: (recommend specific technical expertise needed for the next round if the solution needs improvement)
+
+
+name: pipeline
+
+
+environment:
+  env_type: task-basic
+  max_turn: *max_turn
+  rule:
+    ceo:
+      type: basic
+    role_assigner:
+      type: role_description
+      cnt_agents: *cnt_agents
+    decision_maker:
+      type: vertical-solver-first
+      max_inner_turns: *max_inner_turns
+    executor:
+      type: code-test
+    evaluator:
+      type: basic
+
+agents:
+  - #ceo_agent:
+    agent_type: ceo
+    name: CEO
+    role_description: |-
+      CEO
+    prepend_prompt_template: *ceo_prepend_prompt
+    append_prompt_template: *ceo_append_prompt
+    max_retry: 10
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: local
+      model: "m1-32b"
+      temperature: 0.7
+      max_tokens: 32000
+    output_parser:
+      type: ceo
+      dimensions:
+        - Decision
+        - Recruit Number
+        - Direction
+        - Maximum Tokens
+        
+  - #role_assigner_agent:
+    agent_type: role_assigner
+    name: role assigner
+    max_retry: 10
+    prepend_prompt_template: *role_assigner_prepend_prompt
+    append_prompt_template: *role_assigner_append_prompt
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: m1-32b
+      model: m1-32b
+      temperature: 0.7
+      max_tokens: 8192
+    output_parser:
+      type: role_assigner
+
+  - #solver_agent:
+    agent_type: solver
+    name: Planner
+    max_retry: 20
+    prepend_prompt_template: *solver_prepend_prompt
+    append_prompt_template: *solver_append_prompt
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: m1-32b
+      model: "m1-32b"
+      temperature: 0.7
+      max_tokens: 32000
+    output_parser:
+      type: humaneval-solver
+      # stop:
+      #   - "\ndef "
+      #   - "\nclass "
+      #   - "\nif "
+      #   - "\n\n#"
+
+  - #critic_agents:
+    agent_type: critic
+    name: Critic 1
+    max_retry: 10
+    role_description: |-
+      Waiting to be assigned.
+    prepend_prompt_template: *critic_prepend_prompt
+    append_prompt_template: *critic_append_prompt
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: m1-32b
+      model: "m1-32b"
+      temperature: 0.7
+      max_tokens: 8192
+    output_parser:
+      type: mgsm-critic-agree
+
+  - #executor_agent:
+    agent_type: executor
+    name: Executor
+    max_retry: 10
+    prepend_prompt_template: *executor_prepend_prompt
+    append_prompt_template: *executor_append_prompt
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: m1-32b
+      model: m1-32b
+      temperature: 0.7
+      max_tokens: 8192
+    output_parser:
+      type: humaneval-executor
+
+  - #evaluator_agent:
+    agent_type: evaluator
+    name: Evaluator
+    max_retry: 10
+    role_description: |-
+      Evaluator
+    prepend_prompt_template: *evaluator_prepend_prompt
+    append_prompt_template: *evaluator_append_prompt
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: m1-32b
+      model: m1-32b
+      temperature: 0.7
+      max_tokens: 8192
+    output_parser:
+      type: mgsm-evaluator
+      dimensions:
+        - Correctness
+
+
+  - #manager_agent:
+    agent_type: manager
+    name: Manager
+    max_retry: 10
+    prompt_template: *manager_prompt
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: m1-32b
+      model: "m1-32b"
+      temperature: 0.7
+      max_tokens: 8192
+    output_parser:
+      type: humaneval-manager
+

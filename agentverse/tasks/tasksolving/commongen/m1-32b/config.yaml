@@ -1,0 +1,272 @@
+cnt_agents: &cnt_agents 2
+max_turn: &max_turn 2
+max_inner_turns: &max_inner_turns 3
+
+prompts:
+  ceo_prepend_prompt: &ceo_prepend_prompt |-
+    You are the CEO of a collaborative problem-solving system. Your responsibilities include:
+    1. Monitoring solution progress and resource allocation
+    2. Making strategic decisions about continuation/termination
+    3. Managing expert recruitment and retention
+    4. Directing discussion focus areas when the solution is not correct
+    5. Adjusting reasoning depth through token budgets
+
+    Previous system state:
+    - Task: ${task_description}
+    - Latest solution: ${solution}
+    - Evaluation feedback: ${advice}
+    - Current resources: ${current_resources}
+
+  ceo_append_prompt: &ceo_append_prompt |-
+    Now, you need to decide the system state for this round. Carefully consider the following:
+    - Choose <Stop> only if solution is correct
+    - Recruit experts based on skill gaps identified in evaluation and do not recruit more than 4 experts, typically only 2-3 agents are needed for ordinary tasks and 4 agents are needed for complex tasks
+    - Direct discussion to address weakest solution aspects
+    - Set token budget proportional to the task complexity, token usages should choose from [0, 2048, 4096, 8192, 16384, 32000], typically 2048 tokens for simple tasks, 8192 tokens for tasks require medium reasoning, and 16384 or more tokens for complex reasoning tasks
+    
+    Your response must strictly follow this structure:
+    ### Decision: <Continue> or <Stop>
+    ### Recruit Number: Number of experts to recruit in this round, should be an integer between 1 and 4
+    ### Direction: Discussion direction based on the task description, latest solution, critic opinions, and evaluation feedback
+    ### Maximum Tokens: Maximum tokens for each agent in this round, should be an integer between 2048 and 32000
+
+  role_assigner_prepend_prompt: &role_assigner_prepend_prompt |-
+    You are a team coordinator for a creative writing task. Your job is to recruit experts who can collaboratively generate high-quality paragraphs containing specific required words. The experts you choose should have complementary knowledge domains and writing styles to ensure all required words are naturally incorporated into a coherent, grammatically correct paragraph.
+
+  role_assigner_append_prompt: &role_assigner_append_prompt |-
+    # Task Description
+    You need to recruit a small team of experts to generate a coherent, natural-sounding paragraph that incorporates the following required words:
+    ${task_description}
+    
+    You can recruit ${cnt_critic_agents} experts. Choose experts whose combined knowledge would make them particularly skilled at crafting paragraphs using these specific words in a meaningful context.
+    
+    # Response Format Guidance
+    Your response must follow this exact structure:
+    1. A [discipline] specialized in [primary field], with expertise in [specific areas relevant to the given words]
+    2. A [different discipline] with expertise in [complementary knowledge domain], particularly skilled in [aspects that would help incorporate the remaining words]
+    
+    Only provide the numbered list of expert descriptions and nothing more.
+
+  solver_prepend_prompt: &solver_prepend_prompt |-
+    You are ${role_description}. As an expert in your field, you excel at crafting coherent, engaging text that naturally incorporates specific vocabulary. Your expertise allows you to create meaningful contexts where seemingly unrelated words can be woven together seamlessly in a way that demonstrates deep domain knowledge and creative thinking.
+    
+    You approach writing tasks methodically, ensuring your paragraphs have clear structure, logical flow, and appropriate word usage while maintaining grammatical correctness and natural language patterns.
+
+  solver_append_prompt: &solver_append_prompt |-
+    Here is some thinking direction: ${advice}
+  
+    Please generate a coherent, well-written paragraph that naturally incorporates ALL of the following required words (or their variations - such as plural/singular forms, different verb tenses, etc.):
+    
+    REQUIRED WORDS: 
+    ${task_description}
+    
+    Guidelines:
+    - Each required word should be integrated naturally, not forced
+    - The paragraph should have a clear topic or narrative thread
+    - Use your specific expertise to create meaningful context
+    - directly output the paragraph without any other text, comment, or explanation
+
+  critic_prepend_prompt: &critic_prepend_prompt |-
+    You are ${role_description}, serving as an expert reviewer in a collaborative writing process. Your primary responsibility is to critically evaluate paragraphs to ensure they naturally incorporate all required words.
+    
+    The team's goal is to generate a high-quality paragraph that seamlessly includes all of the following required words (or their variations):
+    REQUIRED WORDS:
+    ${task_description}
+    
+  critic_append_prompt: &critic_append_prompt |-
+    Here is some thinking direction: ${advice}
+
+    Review the chat history carefully to understand the context and previous attempts. Based on your expertise, please give your critics on the most recent generated paragraph to determine whether it successfully incorporates ALL the required words or their acceptable variations (different forms, tenses, etc.).
+    
+    When responding, you should follow the following rules:
+    1. If ALL required words are present and effectively used: Briefly note what makes the paragraph successful and end your response with the special token "[Agree]"
+    2. If ANY required words are missing: Identify specifically which words are missing or poorly incorporated. Provide constructive criticism on how the paragraph could be improved. Create an improved version that addresses these issues. End your response with the special token "[Disagree]"
+    
+  manager_prompt: &manager_prompt |-
+
+  executor_prepend_prompt: &executor_prepend_prompt |-
+
+  executor_append_prompt: &executor_append_prompt |-
+
+  evaluator_prepend_prompt: &evaluator_prepend_prompt |-
+    You are an experienced linguistic evaluator specializing in assessing text completeness and quality. Your role is to carefully analyze paragraphs to verify that they incorporate all required words or their acceptable variations while maintaining coherence and readability.
+
+  evaluator_append_prompt: &evaluator_append_prompt |-
+    Please evaluate whether the following paragraph contains ALL the given required words or their acceptable variations. Be meticulous in your examination.
+  
+    REQUIRED WORDS: 
+    ${task_description}
+
+    SUBMITTED PARAGRAPH: 
+    ```
+    ${solution}
+    ```
+
+    TEST RESULT:
+    ${result}
+    
+    Provide your response in the following format:
+    ### Correctness: [0 or 1]
+    - Score 0: One or more required words (or acceptable variations) are missing
+    - Score 1: All required words (or acceptable variations) are present and used meaningfully
+
+    ### Advice:
+    - Provide specific, actionable feedback on how to improve the paragraph
+    - Suggest alternative ways to incorporate any missing words
+    
+    ### Recruiting Suggestion:
+    - Based on the specific words that posed difficulty, recommend 1-2 expert types who would be especially skilled at incorporating these words naturally in future attempts
+
+
+name: pipeline
+
+
+environment:
+  env_type: task-basic
+  max_turn: *max_turn
+  rule:
+    ceo:
+      type: basic
+    role_assigner:
+      type: role_description
+      cnt_agents: *cnt_agents
+    decision_maker:
+      type: vertical-solver-first
+      max_inner_turns: *max_inner_turns
+    executor:
+      type: coverage-test
+    evaluator:
+      type: basic
+
+agents:
+  - #ceo_agent:
+    agent_type: ceo
+    name: CEO
+    role_description: |-
+      CEO
+    prepend_prompt_template: *ceo_prepend_prompt
+    append_prompt_template: *ceo_append_prompt
+    max_retry: 10
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: local
+      model: "m1-32b"
+      temperature: 0.7
+      max_tokens: 32000
+    output_parser:
+      type: ceo
+      dimensions:
+        - Decision
+        - Recruit Number
+        - Direction
+        - Maximum Tokens
+        
+  - #role_assigner_agent:
+    agent_type: role_assigner
+    name: role assigner
+    max_retry: 10
+    prepend_prompt_template: *role_assigner_prepend_prompt
+    append_prompt_template: *role_assigner_append_prompt
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: m1-32b
+      model: "m1-32b"
+      temperature: 0.7
+      max_tokens: 4096
+    output_parser:
+      type: role_assigner
+
+  - #solver_agent:
+    agent_type: solver
+    name: Planner
+    max_retry: 10
+    max_history: 4
+    prepend_prompt_template: *solver_prepend_prompt
+    append_prompt_template: *solver_append_prompt
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: m1-32b
+      model: "m1-32b"
+      temperature: 0.7
+      max_tokens: 32000
+    output_parser:
+      type: commongen
+      # max_tokens: 1024
+      # stop:
+      #   - "\ndef "
+      #   - "\nclass "
+      #   - "\nif "
+      #   - "\n\n#"
+
+  - #critic_agents:
+    agent_type: critic
+    name: Critic 1
+    max_retry: 10
+    max_history: 4
+    role_description: |-
+      Waiting to be assigned.
+    prepend_prompt_template: *critic_prepend_prompt
+    append_prompt_template: *critic_append_prompt
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: m1-32b
+      model: "m1-32b"
+      temperature: 0.7
+      max_tokens: 16384
+    output_parser:
+      type: mgsm-critic-agree
+
+  - #executor_agent:
+    agent_type: executor
+    name: Executor
+    max_retry: 10
+    prepend_prompt_template: *executor_prepend_prompt
+    append_prompt_template: *executor_append_prompt
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: m1-32b
+      model: m1-32b
+      temperature: 0.7
+      max_tokens: 4096
+    output_parser:
+      type: commongen
+
+  - #evaluator_agent:
+    agent_type: evaluator
+    name: Evaluator
+    max_retry: 10
+    role_description: |-
+      Evaluator
+    prepend_prompt_template: *evaluator_prepend_prompt
+    append_prompt_template: *evaluator_append_prompt
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: m1-32b
+      model: m1-32b
+      temperature: 0.7
+      max_tokens: 16384
+    output_parser:
+      type: humaneval-evaluator
+      dimensions:
+        - Correctness
+
+  - #manager_agent:
+    agent_type: manager
+    name: Manager
+    max_retry: 10
+    prompt_template: *manager_prompt
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: m1-32b
+      model: "m1-32b"
+      temperature: 0.7
+      max_tokens: 16384
+    output_parser:
+      type: humaneval-manager

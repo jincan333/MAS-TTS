@@ -1,0 +1,301 @@
+0
+"def remove_Occ(s,ch)"
+def sort_matrix(M)
+"def find_Volume(l,b,h) "
+"import re
+def text_lowercase_underscore(text)"
+def square_perimeter(a)
+"NO_OF_CHARS = 256
+def str_to_list(string)"
+def test_duplicate(arraynums)
+def is_woodall(x)
+def rev(num)
+def find_Max_Num(arr) 
+"def opposite_Signs(x,y)"
+def is_octagonal(n)
+"from collections import defaultdict
+def count_Substrings(s)"
+def smallest_num(xs)
+def max_difference(test_list)
+def subject_marks(subjectmarks)
+def recursive_list_sum(data_list)
+def pos_count(list)
+def bell_number(n)
+def is_Monotonic(A)
+"def is_sublist(l, s)"
+def find_equal_tuple(Input)
+def comb_sort(nums)
+def dif_Square(n)
+"def is_samepatterns(colors, patterns)"
+"def find_tuples(test_list, K)"
+def is_Diff(n)
+def word_len(s)
+def tetrahedral_number(n)
+"import math
+def volume_sphere(r)"
+def get_Char(strr)
+def sequence(n)
+"import math
+def surfacearea_sphere(r)"
+def centered_hexagonal_number(n)
+"import collections as ct
+def merge_dictionaries_three(dict1,dict2, dict3)"
+"import collections
+def freq_count(list1)"
+def closest_num(N)
+def len_log(list1)
+"def find_substring(str1, sub_str)"
+def is_undulating(n)
+"def power(a,b)"
+"from operator import itemgetter 
+def index_minimum(test_list)"
+def Find_Min_Length(lst)
+def divisor(n)
+def frequency_lists(list1)
+def multiply_num(numbers)
+def decimal_to_binary(n)
+"import sys
+def next_smallest_palindrome(num)"
+"def kth_element(arr, k)"
+def snake_to_camel(word)
+"def eulerian_num(n, m)"
+def sort_sublists(input_list)
+def count(lst)
+"def add_lists(test_list, test_tup)"
+"import heapq
+def merge_sorted_list(num1,num2,num3)"
+"def odd_Equivalent(s,n)"
+def common_in_nested_lists(nestedlist)
+def check_integer(text)
+def empty_dit(list1)
+def tuple_to_int(nums)
+def list_to_float(test_list)
+def string_to_list(string)
+def search(arr)
+def max_product_tuple(list1)
+def amicable_numbers_sum(limit)
+"import cmath
+def angle_complex(a,b)"
+def find_length(string)
+"def sum(a,b)"
+"def multiply_int(x, y)"
+"def long_words(n, str)"
+def magic_square_test(my_matrix)
+"from collections import defaultdict
+def max_occurrences(nums)"
+def reverse_vowels(str1)
+def tup_string(tup1)
+def sum_negativenum(nums)
+def hexagonal_num(n)
+"from array import array
+def zero_count(nums)"
+def is_Sum_Of_Powers_Of_Two(n)
+def circle_circumference(r)
+def extract_singly(test_list)
+def pancake_sort(nums)
+"def count_samepair(list1,list2,list3)"
+def find_lists(Input)
+def max_Abs_Diff(arr)
+"def find_solution(a, b, n)"
+"def remove_elements(list1, list2)"
+def sum_series(n)
+"from math import tan, pi
+def area_polygon(s, l)"
+"import math 
+def div_sum(n)"
+def count_char_position(str1)
+def find_even_pair(A)
+def next_power_of_2(n)
+"def frequency(a,x)"
+"def sum_range_list(list1, m, n)"
+"import math
+def perimeter_pentagon(a)"
+def count_occurance(s)
+def check_type(test_tuple)
+"def is_majority(arr, n, x)"
+def count_Set_Bits(n)
+def odd_values_string(str)
+"def min_of_three(a,b,c)"
+"def all_Bits_Set_In_The_Given_Range(n,l,r)"
+"def re_arrange_array(arr, n)"
+"def replace_blank(str1,char)"
+"import heapq
+def larg_nnum(list1,n)"
+"def lateralsuface_cylinder(r,h)"
+def volume_cube(l)
+def even_bit_set_number(n)
+"from collections import Counter 
+def check_occurences(test_list)"
+def number_of_substrings(str)
+"def get_total_number_of_sequences(m,n)"
+"def replace_list(list1,list2)"
+def count_charac(str1)
+"import math  
+def next_Perfect_Square(N)"
+def max_sum(arr)
+def babylonian_squareroot(number)
+def lps(str)
+def harmonic_sum(n)
+"def intersection_array(array_nums1,array_nums2)"
+"def count_X(tup, x)"
+"def insert_element(list,element)"
+"import cmath  
+def convert(numbers)"
+def count_integer(list1)
+"from itertools import combinations_with_replacement 
+def combinations_colors(l, n)"
+def count_Primes_nums(n)
+"def swap_numbers(a,b)"
+"def maximize_elements(test_tup1, test_tup2)"
+def newman_prime(n)
+"def division_elements(test_tup1, test_tup2)"
+"def split_two_parts(list1, L)"
+def dog_age(h_age)
+"def list_split(S, step)"
+def lateralsurface_cube(l)
+def square_Sum(n)
+def find_star_num(n)
+def ascii_value(k)
+def sum_even_and_even_index(arr)
+def even_Power_Sum(n)
+def rear_extract(test_list)
+"def substract_elements(test_tup1, test_tup2)"
+"import math  
+def even_binomial_Coeff_Sum( n)"
+"def volume_cylinder(r,h)"
+"def dict_filter(dict,n)"
+def count_first_elements(test_tup)
+def is_num_decagonal(n)
+"def sequential_search(dlist, item)"
+def all_unique(test_list)
+"def sub_list(nums1,nums2)"
+def validate(n)
+"def check_element(list,element)"
+"import re
+def text_match_two_three(text)"
+"def max_sub_array_sum_repeated(a, n, k)"
+def square_Sum(n)
+def max_length(list1)
+"def count_no_of_ways(n, k)"
+"def find(n,m)"
+"import math
+def otherside_rightangle(w,h)"
+def max_val(listval)
+def sum_div(number)
+def get_Inv_Count(arr)
+def flatten_list(list1)
+"from collections import defaultdict
+def max_aggregate(stdata)"
+def count_binary_seq(n)
+def dict_depth(d)
+"def find_Element(arr,ranges,rotations,index) "
+"import re
+def start_withp(words)"
+"def max_sum_increasing_subseq(a, n, index, k)"
+"from copy import deepcopy
+def colon_tuplex(tuplex,m,n)"
+"def large_product(nums1, nums2, N)"
+"def maximum(a,b)"
+def string_to_tuple(str1)
+def set_left_most_unset_bit(n)
+"import math
+def volume_cone(r,h)"
+def highest_Power_of_2(n)
+def find_lucas(n)
+"def add_string(list_, string)"
+"def convert_list_dictionary(l1, l2, l3)"
+def get_max_sum (n)
+def max_length_list(input_list)
+def check_distinct(test_tup)
+def first_non_repeating_character(str1)
+"import re  
+regex = r'^[a-z]$|^([a-z]).*\1$'
+def check_char(string)"
+"def median_numbers(a,b,c)"
+def sum_of_digits(nums)
+"def bitwise_xor(test_tup1, test_tup2)"
+def extract_freq(test_list)
+"def add_nested_tuples(test_tup1, test_tup2)"
+"def minimum(a,b)"
+"def check_tuplex(tuplex,tuple1)"
+def find_Parity(x)
+def rearrange_bigger(n)
+"import heapq
+def k_smallest_pairs(nums1, nums2, k)"
+def min_product_tuple(list1)
+def min_val(listval)
+"import re
+def snake_to_camel(word)"
+def remove_odd(l)
+"def extract_nth_element(list1, n)"
+"def overlapping(list1,list2)"
+def max_Product(arr)
+def group_tuples(Input)
+def Find_Max(lst)
+def round_and_sum(list1)
+def cube_Sum(n)
+def concatenate_tuple(test_tup)
+def find_Average_Of_Cube(n)
+def extract_rear(test_tuple)
+"def count_element_in_list(list1, x)"
+def filter_oddnumbers(nums)
+"import re
+def change_date_format(dt)"
+def shell_sort(my_list)
+"def and_tuples(test_tup1, test_tup2)"
+"def parabola_directrix(a, b, c)"
+"def common_element(list1, list2)"
+"def median_trapezium(base1,base2,height)"
+"def check_greater(arr, number)"
+"import re
+def text_match_one(text)"
+def last_Digit(n) 
+def neg_nos(list1)
+def remove_odd(str1)
+def count_bidirectional(test_list)
+def multiple_to_single(L)
+"import re
+def find_adverb_position(text)"
+def surfacearea_cube(l)
+"from array import array
+def positive_count(nums)"
+def largest_neg(list1)
+"def trim_tuple(test_list, K)"
+"def index_multiplication(test_tup1, test_tup2)"
+"from collections import Counter 
+def count_Occurrence(tup, lst)"
+def cube_nums(nums)
+def cal_sum(n)
+"def extract_string(str, l)"
+"import re
+def remove_whitespaces(text1)"
+"def loss_amount(actual_cost,sale_amount)"
+"import math 
+def sumofFactors(n) "
+"import re
+def text_match_wordz(text)"
+def check_monthnumb_number(monthnum2)
+def reverse_string_list(stringlist)
+def Find_Min(lst)
+"def rectangle_area(l,b)"
+"import re
+def remove_uppercase(str1)"
+def Extract(lst)
+def upper_ctr(str)
+def combinations_list(list1)
+def max_subarray_product(arr)
+"def check_value(dict, n)"
+def drop_empty(dict1)
+def max_product(arr)
+def add_pairwise(test_tup)
+"def find_remainder(arr, n)"
+def check_Consecutive(l)
+"def tuple_intersection(test_list1, test_list2)"
+"def replace_char(str1,ch,newch)"
+"from collections import Counter
+def sort_counter(dict1)"
+def big_sum(nums)
+def is_lower(string)
+"import re
+def remove_lowercase(str1)"
+def first_Digit(n) 

@@ -1,6 +1,15 @@
-The code is based on the Agentverse and LLaMA-Factory, LICENSE of these projects are kept in this repository.
+1. Setting up SSH Key:
+```bash
+ssh-keygen -t rsa -b 4096 -C "your_email"
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_rsa
+cat ~/.ssh/id_rsa.pub
+ssh -T git@github.com
+git config user.name "your_name"
+git config user.email "your_email"
+```
 
-1. Installing miniforge:
+2. Installing miniforge:
 ```bash
 cd ~
 wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
@@ -8,26 +17,28 @@ bash Miniforge3-Linux-x86_64.sh
 vi ~/.bashrc
 ```
 
-2. Adding environment variables to ~/.bashrc:
+3. Adding environment variables to ~/.bashrc:
 ```bash
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-# <<< conda initialize <<<
-export MY_HOME=""
-export MY_PROJECT=""
-export OPENAI_API_KEY=""
-export TOGETHER_API_KEY=""
-export TOGETHER_BASE_URL=""
-export DEEPSEEK_BASE_URL=""
-export DEEPSEEK_API_KEY=""
-export WANDB_USER_NAME=""
-export WANDB_API_KEY=""
-export HUGGING_FACE_HUB_TOKEN=""
-export HUGGING_FACE_USER_NAME=""
+export MY_HOME=
+export MY_PROJECT=MAS-TTS
+export MY_OUTPUT=
+export OPENAI_API_KEY=
+export TOGETHER_API_KEY=
+export TOGETHER_BASE_URL=
+export DEEPINFRA_TOKEN=
+export DEEPINFRA_BASE_URL=
+export DEEPSEEK_BASE_URL=
+export DEEPSEEK_API_KEY=
+export WANDB_USER_NAME=
+export WANDB_API_KEY=
+export HUGGING_FACE_HUB_TOKEN=
+export HUGGING_FACE_USER_NAME=
+```
+```bash
 source ~/.bashrc
 ```
 
-3. Installing requirements:
+4. Installing requirements:
 ```bash
 # Create and activate conda environment
 conda create -n agent python=3.11
@@ -45,17 +56,37 @@ pip install -e ".[torch,metrics]"
 pip install vllm
 pip install deepspeed flash-attn wandb
 pip install unsloth==2025.2.14 unsloth_zoo==2025.2.7 
+cd $MY_PROJECT
+python model_download.py
 ```
 
-4. Train model:
-The full dataset of M500 is in `data/M500.jsonl`.
+5. download models:
 ```bash
-bash run/sft.sh
+cd $MY_PROJECT/LLaMA-Factory
+python model_download.py
 ```
 
-5. Run benchmark:
-```bash
-bash run/benchmark.sh
+6. Config new models:
+Add new models: gpt-4o-mini, o3-mini, deepseek-chat, deepseek-reasoner, Qwen, etc.
+```
+# local models
+add in agentverse/llms/__init__.py
+
+
+# remote models
+add in agentverse/llms/openai.py
 ```
 
+7. Config new datasets:
+Add new datasets or tasks: AIME 2024, MATH-500, GPQA Diamond, etc.
+```
+# data
+add data in data
+
+# tasks
+register tasks in dataloader/__init__.py
+
+# configs
+add configs in agentverse/tasks/tasksolving
+```
 

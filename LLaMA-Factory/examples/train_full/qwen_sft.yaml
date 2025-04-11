@@ -1,0 +1,53 @@
+### model
+model_name_or_path: $model_name_or_path
+trust_remote_code: true
+flash_attn: fa2
+# use_unsloth: true
+
+### method
+stage: sft
+do_train: true
+finetuning_type: full
+deepspeed: $MY_PROJECT/LLaMA-Factory/examples/deepspeed/ds_z3_offload_config.json  # choices: [ds_z0_config.json, ds_z2_config.json, ds_z3_config.json]
+
+### dataset
+dataset: $dataset
+template: qwen
+cutoff_len: $cutoff_len
+
+### output
+output_dir: $output_dir
+logging_steps: 10
+save_steps: 500
+plot_loss: true
+overwrite_output_dir: true
+# export_hub_model_id: $HUGGING_FACE_USER_NAME/$model_name
+# hf_hub_token: $HUGGING_FACE_HUB_TOKEN
+
+### train
+per_device_train_batch_size: $per_device_train_batch_size
+gradient_accumulation_steps: $gradient_accumulation_steps
+learning_rate: !!float $learning_rate
+weight_decay: !!float $weight_decay
+num_train_epochs: $num_train_epochs
+lr_scheduler_type: cosine
+warmup_ratio: 0.05
+bf16: true
+# gradient_checkpointing: true
+ddp_timeout: 180000000
+save_strategy: "no"
+push_to_hub: true
+hub_model_id: $HUGGING_FACE_USER_NAME/$experiment_name
+hub_strategy: "end"
+hub_token: $HUGGING_FACE_HUB_TOKEN
+hub_private_repo: true
+
+### eval
+# per_device_eval_batch_size: $per_device_eval_batch_size
+# eval_strategy: steps
+# eval_steps: 500
+# val_size: 0.1
+
+### wandb
+report_to: wandb
+run_name: $experiment_name
