@@ -77,7 +77,7 @@ class CEOAgent(BaseAgent):
         revert_args(self.llm.args, llm_config)
         if parsed_response is None:
             logger.error(f"{self.name} failed to generate valid response.")
-            parsed_response = AgentFinish(return_values={"output": {"decision": 1, "recruit_number": 2, "direction": "No response.", "maximum_tokens": 32000}})
+            parsed_response = AgentFinish({"output": {"decision": 1, "recruit_number": 2, "direction": "No advice yet.", "maximum_tokens": 32000}}, "No response.")
         message = CEOMessage(
             content=parsed_response.return_values["output"],
             sender=self.name,

@@ -21,7 +21,7 @@ from agentverse.environments.tasksolving_env.rules import TasksolvingRule
 class BasicEnvironment(BaseEnvironment):
     rule: TasksolvingRule
     agents: Dict[Enum, Union[BaseAgent, List[BaseAgent]]] = None
-
+    critic_agent_prototype: BaseAgent = None
     task_description: str
     single_agent: bool = False
     cnt_turn: int = 0
@@ -58,9 +58,10 @@ class BasicEnvironment(BaseEnvironment):
         resources: List[CEOMessage] = await self.rule.resource_distribute(
             self.task_description, self.agents, previous_plan, advice, current_resources
         )
-        critic_agent = copy.deepcopy(self.agents[AGENT_TYPES.CRITIC][0])
+        if self.cnt_turn == 0:
+            self.critic_agent_prototype = copy.deepcopy(self.agents[AGENT_TYPES.CRITIC][0])
         current_resources = f"recruit_number: {resources['recruit_number']}, maximum_tokens: {resources['maximum_tokens']}"
-        self.agents[AGENT_TYPES.CRITIC] = [copy.deepcopy(critic_agent) for _ in range(resources['recruit_number'] - 1)]
+        self.agents[AGENT_TYPES.CRITIC] = [copy.deepcopy(self.critic_agent_prototype) for _ in range(resources['recruit_number'] - 1)]
 
         logs.append({"module": "CEO", "content": resources})
         logger.info("", f"Resources:\n{resources}", Fore.CYAN)

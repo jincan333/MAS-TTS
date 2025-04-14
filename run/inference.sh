@@ -18,7 +18,7 @@ dataset_path=data/${dataset}/test.jsonl
 log_dir=logs/benchmark/${model}
 mkdir -p $log_dir
 date_str=$(date '+%d_%b_%H')
-experiment_name=${dataset}_${output_path}_${date_str}
+experiment_name=${dataset}_"${output_path}"_${date_str}
 
 echo "Running agentverse benchmark..."
 echo "Model: ${model}"
@@ -31,20 +31,4 @@ nohup agentverse-benchmark \
     > ${log_dir}/${experiment_name}.log 2>&1 &
 pid1=$!
 wait $pid1
-echo "----------------------------------------"
-
-echo "Evaluating dataset..."
-echo "Judge model: ${judge_model}"
-echo "Model: ${model}"
-echo "Dataset: ${dataset}"
-echo "Log file: logs/evaluation.log"
-nohup python evaluate_dataset.py \
-    --judge_model "${judge_model}" \
-    --model $model \
-    --dataset $dataset \
->> logs/evaluation.log 2>&1 &
-pid2=$!
-wait $pid2
-echo "----------------------------------------"
-echo "All processes have been completed."
 echo "----------------------------------------"

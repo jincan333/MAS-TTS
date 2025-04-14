@@ -528,7 +528,7 @@ class OpenAIChat(BaseChatModel):
         try:
             o = model.generate(prompt, sampling_params)[0]
             output += o.outputs[0].text
-            if count_string_tokens(o.outputs[0].text, self.args.model) >= self.args.max_tokens - 800:
+            if count_string_tokens(o.outputs[0].text, self.args.model) >= self.args.max_tokens - 200:
                 if self.args.model == 'd1-32b' or self.args.model == 'm1-32b':
                     prompt += o.outputs[0].text + "</think>"
                     output += "</think>"
