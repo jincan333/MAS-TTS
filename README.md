@@ -1,9 +1,9 @@
-# [Two Heads are Better Than One: Test-time Scaling of Multi-agent Collaborative Reasoning]()
+# [Two Heads are Better Than One: Test-time Scaling of Multi-agent Collaborative Reasoning](https://arxiv.org/pdf/2504.09772)
 [![LICENSE](https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square)](https://github.com/jincan333/MAS-TTS)
 
 We introduce an adaptive multi-agent framework designed to enhance collaborative reasoning through both model-level training and system-level coordination.
 
-> 🔗 [Paper (under review)]()  
+> 🔗 [Paper](https://arxiv.org/pdf/2504.09772)  
 > 🔗 [Project Page](https://github.com/jincan333/MAS-TTS)  
 > 📦 [Model (M1-32B)](https://huggingface.co/Can111/m1-32b)  
 > 📚 [Dataset (M500)](https://huggingface.co/datasets/Can111/m500)
@@ -121,11 +121,10 @@ The MAS framework is built on the [Agentverse](https://github.com/OpenBMB/AgentV
 ## Citation
 Consider citing our paper if you find our work useful.
 ```bibtex
-@article{
-jin2025two,
-title={Two Heads are Better Than One: Test-time Scaling of Multi-agent Collaborative Reasoning},
-author={Can Jin and Hongwu Peng and Qixin Zhang and Yujin Tang and Dimitris N. Metaxas and Tong Che},
-year={2025},
-url={}
+@article{jin2025two,
+  title={Two Heads are Better Than One: Test-time Scaling of Multi-agent Collaborative Reasoning},
+  author={Jin, Can and Peng, Hongwu and Zhang, Qixin and Tang, Yujin and Metaxas, Dimitris N and Che, Tong},
+  journal={arXiv preprint arXiv:2504.09772},
+  year={2025}
 }
 ```
