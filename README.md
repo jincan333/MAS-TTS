@@ -66,8 +66,6 @@ conda activate llamafactory
 cd $MY_PROJECT/LLaMA-Factory
 pip install -e ".[torch,metrics]"
 pip install vllm deepspeed flash-attn wandb
-cd $MY_PROJECT
-python model_download.py
 ```
 
 ## Configure Model and Dataset

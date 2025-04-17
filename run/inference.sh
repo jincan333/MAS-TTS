@@ -32,3 +32,20 @@ nohup agentverse-benchmark \
 pid1=$!
 wait $pid1
 echo "----------------------------------------"
+
+echo "Evaluating dataset..."
+echo "Judge model: ${judge_model}"
+echo "Model: ${model}"
+echo "Dataset: ${dataset}"
+echo "Log file: logs/evaluation.log"
+nohup python evaluate_dataset.py \
+    --judge_model "${judge_model}" \
+    --model $model \
+    --dataset $dataset \
+    --output_path "${output_path}" \
+>> logs/evaluation.log 2>&1 &
+pid2=$!
+wait $pid2
+echo "----------------------------------------"
+echo "All processes have been completed."
+echo "----------------------------------------"

@@ -22,13 +22,13 @@ prompts:
     - Choose <Stop> only if solution is correct
     - Recruit experts based on skill gaps identified in evaluation and do not recruit more than 4 experts, typically only 2-3 agents are needed for ordinary tasks and 4 agents are needed for complex tasks
     - Direct discussion to address weakest solution aspects
-    - Set token budget proportional to the task complexity, token usages should choose from [0, 2048, 4096, 8192, 16384, 32000], typically 2048 tokens for simple tasks, 8192 tokens for tasks require medium reasoning, and 16384 or more tokens for complex reasoning tasks
+    - Set token budget proportional to the task complexity, token usages should choose from [0, 4096, 8192, 16384, 32000], typically 4096 tokens for simple tasks, 8192 tokens for tasks require medium reasoning, and 16384 or more tokens for complex reasoning tasks
     
     Your response must strictly follow this structure:
     ### Decision: <Continue> or <Stop>
     ### Recruit Number: Number of experts to recruit in this round, should be an integer between 1 and 4
     ### Direction: Discussion direction based on the task description, latest solution, critic opinions, and evaluation feedback
-    ### Maximum Tokens: Maximum tokens for each agent in this round, should be an integer between 2048 and 32000
+    ### Maximum Tokens: Maximum tokens for each agent in this round, should be an integer between 4096 and 32000
 
   role_assigner_prepend_prompt: &role_assigner_prepend_prompt |-
     # Role Description
@@ -79,8 +79,6 @@ prompts:
   solver_prepend_prompt: &solver_prepend_prompt |-
     Solve the following math problem accurately:
     ${task_description}
-
-    You have all the necessary information to solve this math problem. Do not request additional details.
     
   solver_append_prompt: &solver_append_prompt |-
     You are ${role_description}. Based on the chat history and your knowledge, provide a precise and well-explained solution to the math problem.
@@ -93,6 +91,7 @@ prompts:
   critic_prepend_prompt: &critic_prepend_prompt |-
     You are ${role_description}. You are in a discussion group, aiming to collaborative solve the following math problem:
     ${task_description}
+    
     Based on your knowledge, give your critics to a solution of the math problem.
 
   critic_append_prompt: &critic_append_prompt |-
