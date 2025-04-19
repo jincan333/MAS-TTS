@@ -81,7 +81,6 @@ prompts:
     ${task_description}
     
   solver_append_prompt: &solver_append_prompt |-
-    You are ${role_description}. Based on the chat history and your knowledge, provide a precise and well-explained solution to the math problem.
     Here is some thinking direction: ${advice}
 
     # Response Format Guidance:

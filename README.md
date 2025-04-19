@@ -3,10 +3,10 @@
 
 We introduce an adaptive multi-agent framework designed to enhance collaborative reasoning through both model-level training and system-level coordination.
 
-> 🔗 [Paper](https://arxiv.org/pdf/2504.09772)  
-> 🔗 [Project Page](https://github.com/jincan333/MAS-TTS)  
-> 📦 [Model (M1-32B)](https://huggingface.co/Can111/m1-32b)  
-> 📚 [Dataset (M500)](https://huggingface.co/datasets/Can111/m500)
+> 📄 [Paper](https://arxiv.org/pdf/2504.09772)  
+> 🌐 [Project Page](https://github.com/jincan333/MAS-TTS)  
+> 🧠 [Model: M1-32B](https://huggingface.co/Can111/m1-32b)  
+> 📂 [Dataset: M500](https://huggingface.co/datasets/Can111/m500)
 
 ## Table of Contents
 

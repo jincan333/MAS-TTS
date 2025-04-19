@@ -1,6 +1,6 @@
 cnt_agents: &cnt_agents 2
-max_turn: &max_turn 2
-max_inner_turns: &max_inner_turns 3
+max_turn: &max_turn 1
+max_inner_turns: &max_inner_turns 1
 
 prompts:
   ceo_prepend_prompt: &ceo_prepend_prompt |-
@@ -20,7 +20,7 @@ prompts:
   ceo_append_prompt: &ceo_append_prompt |-
     Now, you need to decide the system state for this round. Carefully consider the following:
     - Choose <Stop> only if solution is correct
-    - Recruit experts based on skill gaps identified in evaluation and do not recruit more than 3 experts, typically only 2 agents are needed for ordinary tasks and 3 agents are needed for complex tasks
+    - Recruit experts based on skill gaps identified in evaluation and do not recruit more than 3 experts, typically only 1 agents are needed for ordinary tasks and 2-3 agents are needed for complex tasks
     - Direct discussion to address weakest solution aspects
     - Set token budget proportional to the task complexity, token usages should choose from [0, 4096, 8192, 16384, 32000], typically 4096 tokens for simple tasks, 8192 tokens for tasks require medium reasoning, and 16384 or more tokens for complex reasoning tasks
     
